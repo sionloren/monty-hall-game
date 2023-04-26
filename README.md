@@ -1,5 +1,5 @@
 # Monty Hall Game Simulation
-###A game inspired by the well known Monty Hall problem
+##A game inspired by the well known Monty Hall problem
 
 
 _you can read more about it here:_

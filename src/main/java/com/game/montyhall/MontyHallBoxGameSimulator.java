@@ -31,9 +31,11 @@ public class MontyHallBoxGameSimulator implements BoxGameSimulator{
     }
 
     private void simulateOneMontyHallGame(boolean shouldSwitch) {
-        int selectedBox = new Random().nextInt(numOfBoxes);
+        boxGame.resetGame();
 
+        int selectedBox = new Random().nextInt(numOfBoxes);
         boxGame.selectBox(selectedBox);
+
         int boxNumber = selectedBox + 1;
         logger.debug("You selected box number: {}", boxNumber);
 
@@ -48,8 +50,6 @@ public class MontyHallBoxGameSimulator implements BoxGameSimulator{
         if(boxGame.isWinner()) {
                 numOfWins++;
         }
-
-        boxGame.resetGame();
     }
 
     public void runSimulation(boolean shouldSwitch) {

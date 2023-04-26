@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -18,32 +17,25 @@ public class MontyHallBoxGame implements BoxGame {
     private List<Box> boxes;
     private int numOfBoxes;
     private Box selectedBox;
-    private Box prizeBox;
     private Box revealedBox;
     private Random random;
 
-    public MontyHallBoxGame(int numOfBoxes) {
-        this.numOfBoxes = numOfBoxes;
-        this.boxes = getInitializedBoxes(numOfBoxes);
+    public MontyHallBoxGame(List<Box> boxes) {
+        this.numOfBoxes = boxes.size();
+        this.boxes = boxes;
         this.random = new Random();
-        this.prizeBox = this.boxes.get(random.nextInt(numOfBoxes));
-        this.prizeBox.hasPrizeMoney(true);
     }
 
     public void resetGame() {
-        this.boxes = getInitializedBoxes(this.numOfBoxes);
-        this.prizeBox = this.boxes.get(random.nextInt(numOfBoxes));
-        this.prizeBox.hasPrizeMoney(true);
+        this.boxes.forEach(box -> box.resetState());
+        this.boxes.get(random.nextInt(numOfBoxes)).setHasPrizeMoney(true);
     }
 
-    private List<Box> getInitializedBoxes(int numOfBoxes) {
-        List<Box> initializedBoxes = new ArrayList<>();
-
-        for(int ctr = 0; ctr < numOfBoxes; ctr++) {
-            initializedBoxes.add(new Box(ctr+1));
-        }
-
-        return initializedBoxes;
+    public Box getPrizeBox(List<Box> boxes) {
+        return boxes.stream()
+                .filter(box -> box.hasPrizeMoney())
+                .findFirst()
+                .get();
     }
 
     @Override
@@ -53,21 +45,21 @@ public class MontyHallBoxGame implements BoxGame {
 
     @Override
     public void switchBox() {
-        //choose the box that is not already selected or revealed
+        //choose the box that is not already selected and revealed
         List<Box> qualifiedBoxesToSwitchTo = boxes.stream()
                 .filter(box -> !selectedBox.equals(box) && !box.isOpen())
                 .collect(Collectors.toList());
 
         Box newSelectedBox = qualifiedBoxesToSwitchTo.get(random.nextInt(qualifiedBoxesToSwitchTo.size()));
-        setSelectedBox(newSelectedBox); ;
+        setSelectedBox(newSelectedBox);
         logger.debug("You switched to box number: {}", getSelectedBox().getBoxNumber());
     }
 
     @Override
     public void revealBox() {
-        //choose the box that is not already selected or has no prize
+        //choose the box that is not already selected, open, and has no prize
         List<Box> qualifiedBoxesToReveal = boxes.stream()
-                .filter(box -> !selectedBox.equals(box) && !box.hasPrizeMoney())
+                .filter(box -> !selectedBox.equals(box) && !box.hasPrizeMoney() && !box.isOpen())
                 .collect(Collectors.toList());
 
         Box revealedBox = qualifiedBoxesToReveal.get(random.nextInt(qualifiedBoxesToReveal.size()));
@@ -78,7 +70,7 @@ public class MontyHallBoxGame implements BoxGame {
 
     @Override
     public void displayGameStatus() {
-        logger.debug("The prize money is behind box: {}", getPrizeBox().getBoxNumber());
+        logger.debug("The prize money is behind box: {}", getPrizeBox(this.boxes).getBoxNumber());
 
         if (isWinner()) {
             logger.debug("You chose the correct box and won the money!");
